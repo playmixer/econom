@@ -3,11 +3,20 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.authentication import TokenAuthentication, SessionAuthentication
 from rest_framework.permissions import IsAuthenticated
-from .models import Section, Wallet, CostCategory, IncomeCategory
-from .serializers import SectionSerializer, WalletSerializer, WalletListSerializer, CostCategoryListSerializer, \
-    IncomeCategoryListSerializer, CostCategorySerializer
+from .models import Section, Wallet, CostCategory, IncomeCategory, Cost, Income
+from .serializers import (
+    SectionSerializer,
+    WalletSerializer,
+    WalletListSerializer,
+    CostCategoryListSerializer,
+    IncomeCategoryListSerializer,
+    CostCategorySerializer,
+    IncomeCategorySerializer,
+    CostListSerializer,
+)
 from django.db import IntegrityError
 from django.core.exceptions import ObjectDoesNotExist
+from apps.econom.utilits import change_cost_wallet
 
 """
 post
@@ -26,6 +35,7 @@ put
 }
 
 """
+
 
 def section_exist(user, id):
     try:
@@ -59,7 +69,7 @@ class SectionView(APIView, TokenAuthentication):
     authentication_classes = (TokenAuthentication, SessionAuthentication)
     permission_classes = (IsAuthenticated,)
 
-    def get(self, request, pk, fromat=None):
+    def get(self, request, pk):
         try:
             section = Section.objects.get(pk=pk)
         except ObjectDoesNotExist:
@@ -68,7 +78,7 @@ class SectionView(APIView, TokenAuthentication):
         serializer = SectionSerializer(section)
         return Response({"section": serializer.data})
 
-    def put(self, request, pk, format=None):
+    def put(self, request, pk):
         data = request.data.get('section')
         try:
             section = Section.objects.get(pk=pk, user=request.user)
@@ -80,7 +90,7 @@ class SectionView(APIView, TokenAuthentication):
             return Response(section_saved)
         return Response({"error": "Is not valid"}, 400)
 
-    def delete(self, request, pk, format=None):
+    def delete(self, request, pk):
         try:
             section = Section.objects.filter(pk=pk, user=request.user)
             section.delete()
@@ -183,7 +193,7 @@ class CostCategoryListView(APIView):
 
     def get(self, request, id_section):
         section = Section.objects.get(pk=id_section, user=request.user)
-        categories = CostCategory.objects.filter(Q(section=None) | Q(section=section)).order_by('title')
+        categories = CostCategory.objects.filter(section=section).order_by('title')
         serializer = CostCategoryListSerializer(categories, many=True)
         return Response({"categories": serializer.data})
 
@@ -192,7 +202,7 @@ class CostCategoryListView(APIView):
         section = Section.objects.get(pk=id_section, user=request.user)
         serializer = CostCategoryListSerializer(data=category)
         try:
-            if serializer.is_valid():
+            if serializer.is_valid(raise_exception=True):
                 serializer.save(section=section)
                 return Response({"category": serializer.data})
         except IntegrityError:
@@ -224,7 +234,21 @@ class CostCategoryView(APIView):
         return Response({"category": serializer.data})
 
     def put(self, request, id_section, pk):
-        pass
+        data = request.data.get('category')
+        try:
+            section = Section.objects.get(pk=id_section)
+        except ObjectDoesNotExist:
+            return Response({"error": "Section not found"}, 400)
+
+        try:
+            category = CostCategory.objects.get(pk=pk, section=section)
+        except ObjectDoesNotExist:
+            return Response({"error": "Category not found"}, 400)
+
+        serialize = CostCategorySerializer(category, data=data)
+        if serialize.is_valid(raise_exception=True):
+            category_saved = serialize.save()
+        return Response(category_saved)
 
     def delete(self, request, id_section, pk):
         section = Section.objects.get(pk=id_section, user=request.user)
@@ -239,6 +263,139 @@ class IncomeCategoryListView(APIView):
 
     def get(self, request, id_section):
         section = Section.objects.get(pk=id_section, user=request.user)
-        categories = IncomeCategory.objects.filter(Q(section=None) | Q(section=section)).order_by('title')
+        categories = IncomeCategory.objects.filter(section=section).order_by('title')
         serializer = IncomeCategoryListSerializer(categories, many=True)
         return Response({"categories": serializer.data})
+
+    def post(self, request, id_section):
+        category = request.data.get('category')
+        section = Section.objects.get(pk=id_section, user=request.user)
+        serializer = IncomeCategoryListSerializer(data=category)
+        try:
+            if serializer.is_valid(raise_exception=True):
+                serializer.save(section=section)
+                return Response({"category": serializer.data})
+        except IntegrityError:
+            return Response({"error": f"Category '{serializer.data['title']}' is exist"}, 400)
+
+
+class IncomeCategoryView(APIView):
+    authentication_classes = (TokenAuthentication, SessionAuthentication)
+    permission_classes = (IsAuthenticated,)
+
+    def _category_exist(self, section, pk):
+        try:
+            IncomeCategory.objects.get(pk=pk, section=section)
+            return True
+        except ObjectDoesNotExist:
+            return False
+
+    def get(self, request, id_section, pk):
+        if not section_exist(request.user, id_section):
+            return Response({"error": "Section not found"}, 400)
+
+        section = Section.objects.get(pk=id_section, user=request.user)
+
+        if not self._category_exist(section, pk):
+            return Response({"error": "Category not found"}, 400)
+
+        category = IncomeCategory.objects.get(pk=pk, section=section)
+        serializer = IncomeCategorySerializer(category)
+        return Response({"category": serializer.data})
+
+    def put(self, request, id_section, pk):
+        data = request.data.get('category')
+        try:
+            section = Section.objects.get(pk=id_section)
+        except ObjectDoesNotExist:
+            return Response({"error": "Section not found"}, 400)
+
+        try:
+            category = IncomeCategory.objects.get(pk=pk, section=section)
+        except ObjectDoesNotExist:
+            return Response({"error": "Category not found"}, 400)
+
+        serialize = IncomeCategorySerializer(category, data=data)
+        if serialize.is_valid(raise_exception=True):
+            category_saved = serialize.save()
+        return Response(category_saved)
+
+    def delete(self, request, id_section, pk):
+        section = Section.objects.get(pk=id_section, user=request.user)
+        category = IncomeCategory.objects.get(pk=pk, section=section)
+        category.delete()
+        return Response({})
+
+
+class CostListView(APIView):
+    authentication_classes = (TokenAuthentication, SessionAuthentication)
+    permission_classes = (IsAuthenticated,)
+
+    def get(self, request, id_section):
+        try:
+            section = Section.objects.get(pk=id_section, user=request.user)
+            costs = Cost.objects.filter(section=section)
+            serializer = CostListSerializer(costs, many=True)
+            return Response({"costs": serializer.data})
+        except ObjectDoesNotExist:
+            return Response({"error": "Not found"}, 400)
+
+    def post(self, request, id_section):
+        section = Section.objects.get(pk=id_section, user=request.user)
+        cost = request.data.get('cost')
+        if cost is None:
+            return Response({"error": "Not found cost"})
+
+        category = None
+        if cost.get('category'):
+            category = CostCategory.objects.get(pk=cost['category'])
+        wallet = Wallet.objects.get(pk=cost['wallet'])
+        serializer = CostListSerializer(data=cost)
+        try:
+            if serializer.is_valid(raise_exception=True):
+                wallet.cash -= cost['cash']
+                wallet.save()
+                serializer.save(section=section, wallet=wallet, category=category)
+                return Response({"cost": serializer.data})
+        except IntegrityError:
+            return Response({"error": serializer.data}, 400)
+
+
+class CostView(APIView):
+    authentication_classes = (TokenAuthentication, SessionAuthentication)
+    permission_classes = (IsAuthenticated,)
+
+    def get(self, request, id_section, pk):
+        try:
+            section = Section.objects.get(pk=id_section, user=request.user)
+            cost = Cost.objects.get(pk=pk, section=section)
+            serializer = CostListSerializer(cost)
+            return Response({"cost": serializer.data})
+        except ObjectDoesNotExist:
+            return Response({"error": "Not found"}, 400)
+
+    def put(self, request, id_section, pk):
+        section = Section.objects.get(pk=id_section, user=request.user)
+        data = request.data.get('cost')
+        cost = Cost.objects.get(pk=pk, section=section)
+        if data.get('category'):
+            cost.category = CostCategory.objects.get(pk=data['category'])
+        wallet_from = cost.wallet
+        cash_from = cost.cash
+        wallet_to = Wallet.objects.get(pk=data['wallet'])
+        cost.wallet = wallet_to
+        serializer = CostListSerializer(cost, data=data)
+        if serializer.is_valid(raise_exception=True):
+            change_cost_wallet(wallet_from, cash_from, wallet_to, data['cash'])
+            cost_saved = serializer.save()
+            return Response({cost_saved})
+
+    def delete(self, request, id_section, pk):
+        section = Section.objects.get(pk=id_section, user=request.user)
+        cost = Cost.objects.get(pk=pk, section=section)
+        wallet = cost.wallet
+        wallet.cash += cost.cash
+        wallet.save()
+        cost.delete()
+        return Response({})
+

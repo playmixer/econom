@@ -81,6 +81,7 @@ WSGI_APPLICATION = 'core.wsgi.application'
 
 # Database
 # https://docs.djangoproject.com/en/3.0/ref/settings/#databases
+DATABASE_URL = os.getenv("DATABASE_URL")
 
 DATABASES = {
     'default': {
@@ -88,7 +89,7 @@ DATABASES = {
         'NAME': os.getenv("DB_NAME"),
         'USER': os.getenv("DB_USER"),
         'PASSWORD': os.getenv("DB_PASS"),
-        'HOST': os.getenv('DB_HOST'),
+        'HOST': os.getenv('DB_HOST', DATABASE_URL),
         'PORT': 5432,
     }
 }

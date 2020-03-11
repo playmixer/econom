@@ -13,6 +13,7 @@ from .serializers import (
     CostCategorySerializer,
     IncomeCategorySerializer,
     CostListSerializer,
+    IncomeListSerializer,
 )
 from django.db import IntegrityError
 from django.core.exceptions import ObjectDoesNotExist
@@ -344,7 +345,7 @@ class CostListView(APIView):
         section = Section.objects.get(pk=id_section, user=request.user)
         cost = request.data.get('cost')
         if cost is None:
-            return Response({"error": "Not found cost"})
+            return Response({"error": "Not found cost"}, 400)
 
         category = None
         if cost.get('category'):
@@ -399,3 +400,46 @@ class CostView(APIView):
         cost.delete()
         return Response({})
 
+
+class IncomeListView(APIView):
+    authentication_classes = (TokenAuthentication, SessionAuthentication)
+    permission_classes = (IsAuthenticated,)
+
+    def get(self, request, id_section):
+        try:
+            section = Section.objects.get(pk=id_section, user=request.user)
+            incomes = Income.objects.filter(section=section)
+            serializer = IncomeListSerializer(incomes, many=True)
+            return Response({"incomes": serializer.data})
+        except ObjectDoesNotExist:
+            return Response({"error": "Not found"}, 400)
+
+    def post(self, request, id_section):
+        section = Section.objects.get(pk=id_section, user=request.user)
+        income = request.data.get('income')
+        if income is None:
+            return Response({"error": "Not found"}, 400)
+        category = None
+        if income.get('category'):
+            category = IncomeCategory.objects.get(pk=income['category'])
+        wallet = Wallet.objects.get(pk=income['wallet'])
+        serializer = IncomeListSerializer(data=income)
+        try:
+            if serializer.is_valid(raise_exception=True):
+                wallet.cash += income['cash']
+                wallet.save()
+                serializer.save(section=section, wallet=wallet, category=category)
+                return Response({"income": serializer.data})
+        except IntegrityError:
+            return Response({"error": serializer.data}, 400)
+
+
+class IncomeView(APIView):
+    authentication_classes = (TokenAuthentication, SessionAuthentication)
+    permission_classes = (IsAuthenticated,)
+
+    def get(self, request, id_section, pk):
+        section = Section.objects.get(pk=id_section, user=request.user)
+        income = Income.objects.get(pk=pk, section=section)
+        serializer = IncomeListSerializer(income)
+        return Response({"income": serializer.data})

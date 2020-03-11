@@ -1,7 +1,7 @@
 from apps.econom.models import Wallet
 
 
-def change_cost_wallet(wallet_from, cash_from, wallet_to, cash_to):
+def transfer_cash(wallet_from, cash_from, wallet_to, cash_to):
     if wallet_from == wallet_to:
         wallet_from.cash += cash_from
         wallet_from.cash -= cash_to

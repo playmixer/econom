@@ -17,40 +17,31 @@ from .serializers import (
 )
 from django.db import IntegrityError
 from django.core.exceptions import ObjectDoesNotExist
-from apps.econom.utilits import change_cost_wallet
-
-"""
-post
-{
-    "section": {
-        "title": "Section"
-    }
-}
-         
-put
-{
-    "section": {
-        "id": 1,
-        "title": "Section"
-    }
-}
-
-"""
+from apps.econom.utilits import transfer_cash
 
 
-def section_exist(user, id):
+def get_section(id, user):
     try:
-        Section.objects.get(pk=id, user=user)
-        return True
+        return Section.objects.get(pk=id, user=user)
     except ObjectDoesNotExist:
-        return False
+        return None
+
+
+def get_wallet(id_section, user, pk):
+    section = get_section(id_section, user)
+    if section is None:
+        return None
+    try:
+        return Wallet.objects.get(section=section, pk=pk)
+    except (ObjectDoesNotExist, AttributeError):
+        return None
 
 
 class SectionListView(APIView, TokenAuthentication):
     authentication_classes = (TokenAuthentication, SessionAuthentication)
     permission_classes = (IsAuthenticated,)
 
-    def get(self, request, fromat=None):
+    def get(self, request):
         sections = Section.objects.filter(user=request.user)
         serializer = SectionSerializer(sections, many=True)
         return Response({'sections': serializer.data})
@@ -60,7 +51,7 @@ class SectionListView(APIView, TokenAuthentication):
         serializer = SectionSerializer(data=section)
         try:
             if serializer.is_valid(raise_exception=True):
-                section_saved = serializer.save(user=request.user)
+                serializer.save(user=request.user)
                 return Response({"section": serializer.data})
         except IntegrityError:
             return Response({"error": f"Section '{section['title']}' exist"}, 400)
@@ -71,20 +62,17 @@ class SectionView(APIView, TokenAuthentication):
     permission_classes = (IsAuthenticated,)
 
     def get(self, request, pk):
-        try:
-            section = Section.objects.get(pk=pk)
-        except ObjectDoesNotExist:
-            return Response({"error": "Not found"}, 400)
-
+        section = get_section(pk, request.user)
+        if section is None:
+            return Response({"error": "Section not found"}, 400)
         serializer = SectionSerializer(section)
         return Response({"section": serializer.data})
 
     def put(self, request, pk):
         data = request.data.get('section')
-        try:
-            section = Section.objects.get(pk=pk, user=request.user)
-        except ObjectDoesNotExist:
-            return Response({"error": "Not found"}, 400)
+        section = get_section(pk, request.user)
+        if not section:
+            return Response({"error": "Section not found"}, 400)
         serializer = SectionSerializer(section, data=data)
         if serializer.is_valid(raise_exception=True):
             section_saved = serializer.save()
@@ -92,19 +80,11 @@ class SectionView(APIView, TokenAuthentication):
         return Response({"error": "Is not valid"}, 400)
 
     def delete(self, request, pk):
-        try:
-            section = Section.objects.filter(pk=pk, user=request.user)
-            section.delete()
-            return Response({})
-        except (AttributeError, ObjectDoesNotExist):
-            return Response({"error": "Not found"}, 400)
-
-
-"""
-
-wallet post
-{"wallet":{"title":"wallet1", "cash":0}}
-"""
+        section = get_section(pk, request.user)
+        if not section:
+            return Response({"error": "Section not found"}, 400)
+        section.delete()
+        return Response({})
 
 
 class WalletListView(APIView, TokenAuthentication):
@@ -118,7 +98,9 @@ class WalletListView(APIView, TokenAuthentication):
 
     def post(self, request, id_section):
         wallet = request.data.get('wallet')
-        section = Section.objects.get(pk=id_section, user=request.user)
+        section = get_section(id_section, request.user)
+        if section is None:
+            return Response({"error": "Section not found"}, 400)
         serializer = WalletSerializer(data=wallet)
         try:
             if serializer.is_valid(raise_exception=True):
@@ -132,60 +114,32 @@ class WalletView(APIView):
     authentication_classes = (TokenAuthentication, SessionAuthentication)
     permission_classes = (IsAuthenticated,)
 
-    def _exist(self, request, id_section=None, id_wallet=None):
-        if id_section:
-            try:
-                section = Section.objects.get(pk=id_section, user=request.user)
-            except ObjectDoesNotExist:
-                return "Section not found"
-
-        if id_wallet:
-            try:
-                Wallet.objects.get(pk=id_wallet, section=section)
-            except ObjectDoesNotExist:
-                return "Wallet not found"
-
-        return False
-
     def get(self, request, id_section, pk):
-        is_not_exist = self._exist(request, id_section=id_section, id_wallet=pk)
-        if is_not_exist:
-            return Response({"error": is_not_exist}, 400)
-
-        section = Section.objects.get(pk=id_section, user=request.user)
-        wallet = Wallet.objects.get(pk=pk, section=section)
-
+        wallet = get_wallet(id_section, request.user, pk)
+        if wallet is None:
+            return Response({"error": "Wallet not found"}, 400)
         serializer = WalletSerializer(wallet)
         return Response({"wallet": serializer.data})
 
     def put(self, request, id_section, pk):
-        is_not_exist = self._exist(request, id_section=id_section, id_wallet=pk)
-        if is_not_exist:
-            return Response({"error": is_not_exist}, 400)
         data = request.data.get("wallet")
-        section = Section.objects.get(pk=id_section, user=request.user)
-        wallet = Wallet.objects.get(section=section, pk=pk)
+        wallet = get_wallet(id_section, request.user, pk)
+        if wallet is None:
+            return Response({"error": "Wallet not found"}, 400)
         serializer = WalletSerializer(wallet, data=data)
         try:
             if serializer.is_valid(raise_exception=True):
                 wallet_saved = serializer.save()
                 return Response(wallet_saved)
-            return Response({"error": "Is not valid"}, 400)
         except IntegrityError:
             return Response({"error": f"Wallet '{serializer.data['title']}' is exist"}, 400)
 
     def delete(self, request, id_section, pk):
-        is_not_exist = self._exist(request, id_section=id_section, id_wallet=pk)
-        if is_not_exist:
-            return Response({"error": is_not_exist}, 400)
-
-        section = Section.objects.get(pk=id_section, user=request.user)
-        wallet = Wallet.objects.get(pk=pk, section=section)
-        try:
-            wallet.delete()
-            return Response({})
-        except (AttributeError, ObjectDoesNotExist):
-            return Response({"error": "Not found"}, 400)
+        wallet = get_wallet(id_section, request.user, pk)
+        if wallet is None:
+            return Response({"error": "Wallet not found"}, 400)
+        wallet.delete()
+        return Response({})
 
 
 class CostCategoryListView(APIView):
@@ -193,7 +147,10 @@ class CostCategoryListView(APIView):
     permission_classes = (IsAuthenticated,)
 
     def get(self, request, id_section):
-        section = Section.objects.get(pk=id_section, user=request.user)
+        section = get_section(id_section, request.user)
+        if section is None:
+            Response({"error": "Section not found"}, 400)
+
         categories = CostCategory.objects.filter(section=section).order_by('title')
         serializer = CostCategoryListSerializer(categories, many=True)
         return Response({"categories": serializer.data})
@@ -216,21 +173,18 @@ class CostCategoryView(APIView):
 
     def _category_exist(self, section, pk):
         try:
-            CostCategory.objects.get(pk=pk, section=section)
-            return True
+            return CostCategory.objects.get(pk=pk, section=section)
         except ObjectDoesNotExist:
-            return False
-
-    def get(self, request, id_section, pk):
-        if not section_exist(request.user, id_section):
-            return Response({"error": "Section not found"}, 400)
-
-        section = Section.objects.get(pk=id_section, user=request.user)
-
-        if not self._category_exist(section, pk):
             return Response({"error": "Category not found"}, 400)
 
-        category = CostCategory.objects.get(pk=pk, section=section)
+    def get(self, request, id_section, pk):
+        section = get_section(request.user, id_section)
+        if not section:
+            Response({"error": "Section not found"}, 400)
+
+        if not self._category_exist(section, pk):
+            category = CostCategory.objects.get(pk=pk, section=section)
+
         serializer = CostCategorySerializer(category)
         return Response({"category": serializer.data})
 
@@ -241,10 +195,7 @@ class CostCategoryView(APIView):
         except ObjectDoesNotExist:
             return Response({"error": "Section not found"}, 400)
 
-        try:
-            category = CostCategory.objects.get(pk=pk, section=section)
-        except ObjectDoesNotExist:
-            return Response({"error": "Category not found"}, 400)
+        category = self._category_exist(section, pk)
 
         serialize = CostCategorySerializer(category, data=data)
         if serialize.is_valid(raise_exception=True):
@@ -286,21 +237,15 @@ class IncomeCategoryView(APIView):
 
     def _category_exist(self, section, pk):
         try:
-            IncomeCategory.objects.get(pk=pk, section=section)
-            return True
+            return IncomeCategory.objects.get(pk=pk, section=section)
         except ObjectDoesNotExist:
-            return False
-
-    def get(self, request, id_section, pk):
-        if not section_exist(request.user, id_section):
-            return Response({"error": "Section not found"}, 400)
-
-        section = Section.objects.get(pk=id_section, user=request.user)
-
-        if not self._category_exist(section, pk):
             return Response({"error": "Category not found"}, 400)
 
-        category = IncomeCategory.objects.get(pk=pk, section=section)
+    def get(self, request, id_section, pk):
+        section = get_section(request.user, id_section)
+        if not section:
+            Response({"error": "Section not found"}, 400)
+        category = self._category_exist(section, pk)
         serializer = IncomeCategorySerializer(category)
         return Response({"category": serializer.data})
 
@@ -387,7 +332,7 @@ class CostView(APIView):
         cost.wallet = wallet_to
         serializer = CostListSerializer(cost, data=data)
         if serializer.is_valid(raise_exception=True):
-            change_cost_wallet(wallet_from, cash_from, wallet_to, data['cash'])
+            transfer_cash(wallet_from, cash_from, wallet_to, data['cash'])
             cost_saved = serializer.save()
             return Response({cost_saved})
 
@@ -440,6 +385,35 @@ class IncomeView(APIView):
 
     def get(self, request, id_section, pk):
         section = Section.objects.get(pk=id_section, user=request.user)
+        data = Income.objects.get(pk=pk, section=section)
+        serializer = IncomeListSerializer(data)
+        return Response({'income': serializer.data})
+
+    def put(self, request, id_section, pk):
+        section = Section.objects.get(pk=id_section, user=request.user)
+        data = request.data.get('income')
         income = Income.objects.get(pk=pk, section=section)
-        serializer = IncomeListSerializer(income)
-        return Response({"income": serializer.data})
+        if data.get('category'):
+            income.category = IncomeCategory.objects.get(pk=data['category'])
+        wallet_from = income.wallet
+        cash_from = income.cash
+        wallet_to = Wallet.objects.get(pk=data['wallet'])
+        income.wallet = wallet_to
+        serializer = IncomeListSerializer(income, data=data)
+        if serializer.is_valid(raise_exception=True):
+            transfer_cash(wallet_from, cash_from, wallet_to, data['cash'])
+            income_saved = serializer.save()
+            return Response({income_saved})
+
+    def delete(self, request, id_section, pk):
+        section = Section.objects.get(pk=id_section, user=request.user)
+        income = Income.objects.get(pk=pk, section=section)
+        wallet = income.wallet
+        wallet.cash -= income.cash
+        wallet.save()
+        income.delete()
+        return Response({})
+
+
+
+

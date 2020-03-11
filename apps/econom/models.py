@@ -12,7 +12,7 @@ class Section(models.Model):
         ]
 
     def __str__(self):
-        return f"{self.user} - {self.title}({self.id})"
+        return f"{self.user} < {self.title} [{self.id}]"
 
 
 class Wallet(models.Model):
@@ -26,7 +26,7 @@ class Wallet(models.Model):
         ]
 
     def __str__(self):
-        return f"{self.section} - {self.title}({self.id})"
+        return f"{self.section} < {self.title} [{self.id}]"
 
 
 class CostCategory(models.Model):
@@ -39,7 +39,7 @@ class CostCategory(models.Model):
         ]
 
     def __str__(self):
-        return f"{self.section} - {self.title}({self.id})"
+        return f"{self.section} < {self.title} [{self.id}]"
 
 
 class IncomeCategory(models.Model):
@@ -52,7 +52,7 @@ class IncomeCategory(models.Model):
         ]
 
     def __str__(self):
-        return f"{self.section} - {self.title}"
+        return f"{self.section} < {self.title} [{self.id}]"
 
 
 class Cost(models.Model):
@@ -63,6 +63,9 @@ class Cost(models.Model):
     section = models.ForeignKey(Section, on_delete=models.CASCADE, blank=False, default=None)
     cash = models.FloatField(blank=False, default=0)
 
+    def __str__(self):
+        return f"{self.wallet} < {self.title} [{self.id}]"
+
 
 class Income(models.Model):
     title = models.CharField(max_length=100)
@@ -71,3 +74,6 @@ class Income(models.Model):
     category = models.ForeignKey(IncomeCategory, on_delete=models.SET_NULL, blank=True, null=True, default=None)
     section = models.ForeignKey(Section, on_delete=models.CASCADE, blank=False, default=None)
     cash = models.FloatField(blank=False, default=0)
+
+    def __str__(self):
+        return f"{self.wallet} < {self.title}[{self.id}]"

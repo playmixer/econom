@@ -9,7 +9,8 @@ from apps.econom.views import (
     IncomeCategoryListView,
     IncomeCategoryView,
     CostListView,
-    CostView
+    CostView,
+    IncomeListView,
 )
 
 urlpatterns = [
@@ -21,6 +22,7 @@ urlpatterns = [
     path('section/<int:id_section>/cost/<int:pk>', CostView.as_view()),
     path('section/<int:id_section>/cost/category/', CostCategoryListView.as_view()),
     path('section/<int:id_section>/cost/category/<int:pk>/', CostCategoryView.as_view()),
+    path('section/<int:id_section>/income/', IncomeListView.as_view()),
     path('section/<int:id_section>/income/category/', IncomeCategoryListView.as_view()),
     path('section/<int:id_section>/income/category/<int:pk>/', IncomeCategoryView.as_view()),
 ]

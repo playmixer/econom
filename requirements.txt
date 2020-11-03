@@ -7,3 +7,4 @@ psycopg2==2.8.4
 django-rest-auth==0.9.5
 django-rest-authtoken==1.2.4
 django-allauth==0.41.0
+mysqlclient

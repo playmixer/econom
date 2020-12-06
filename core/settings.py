@@ -49,6 +49,7 @@ INSTALLED_APPS = [
     'rest_auth.registration',
     'apps.api',
     'apps.econom',
+    'apps.frontend'
 ]
 
 MIDDLEWARE = [

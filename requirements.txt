@@ -1,8 +1,6 @@
-Django==3.0.7
+Django==3.0.3
 djangorestframework==3.11.0
-psycopg2
 django-rest-auth
 django-rest-authtoken
 django-allauth
 gunicorn
-mysqlclient

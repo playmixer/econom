@@ -1,5 +1,5 @@
-import multiprocessing
 from config import *
 
-bind = f"127.0.0.1:{PORT}"
-workers = multiprocessing.cpu_count() * 2
+bind = f"{ALLOWED_HOST}:{ALLOWED_PORT}"
+workers = WORKERS_COUNT
+timeout = 120

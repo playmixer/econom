@@ -25,7 +25,7 @@ SECRET_KEY = config.SECRET_KEY
 
 # SECURITY WARNING: don't run with debug turned on in production!
 
-DEBUG = False if config.PROD else True
+DEBUG = True
 
 ALLOWED_HOSTS = ['127.0.0.1']
 
@@ -102,7 +102,7 @@ DATABASES = {
         'NAME': config.DB_NAME,
         'USER': config.DB_USER,
         'PASSWORD': config.DB_PASSWORD,
-        'HOST': 'localhost',
+        'HOST': config.DB_HOST,
     }
 }
 
@@ -144,6 +144,15 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/3.0/howto/static-files/
 
 STATIC_URL = config.SUBDIRECTORY_STATIC + '/static/'
+# STATIC_URL = '/static/'
+# STATICFILES_DIRS = (
+#     os.path.join(BASE_DIR, 'apps/frontend/static'),
+#     os.path.join(BASE_DIR, 'static'),
+# )
+# STATIC_ROOT = 'F:/Projects/Econom/backend/apps/frontend/static'
+# STATICFILES_DIRS = [
+#     os.path.join(BASE_DIR, "apps/frontend/static")
+# ]
 
 default_authentication_classes = (
         'rest_framework.authentication.BasicAuthentication',

@@ -5,5 +5,5 @@ urlpatterns = [
     path('auth/', include('rest_auth.urls')),
     path('auth/registration/', CreatUserView.as_view()),
     # path('auth/registration/', include('rest_auth.registration.urls')),
-    path('econom/', include('apps.econom.urls')),
+    # path('econom/', include('apps.econom.urls')),
 ]

@@ -1,0 +1,24 @@
+{% extends 'base.html' %}
+
+{% block title %}Счета{% endblock %}
+
+{% block content %}
+    {% include 'components/flash_messages.html' %}
+    <form action="{{ url_for('.wallet_create') }}" method="POST">
+    {{ form.csrf_token }}
+        <div>
+            <div class="mb-3">
+                {{ form.title.label(class_='form-label', for=form.title.name) }}
+                {{ form.title(class_='form-control') }}
+            </div>
+            <div>
+                {% with errors=form.title.errors %}
+                    {% include 'components/forms/errors.html' %}
+                {% endwith %}
+            </div>
+        </div>
+        <input type="submit" value="Добавить" class="btn btn-primary">
+    </form>
+
+
+{% endblock %}

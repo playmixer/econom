@@ -1,0 +1,29 @@
+{% extends 'base.html' %}
+
+{% block title %}Финансы{% endblock %}
+
+{% block content %}
+    <div class="d-flex justify-content-between align-items-center mb-5">
+        {% set p_month, p_year = utils.prev_month(month, year) %}
+        <a href="?month={{ p_month }}&year={{ p_year }}">
+            <img src="{{ url_for('static', filename='images/arrow-left.svg') }}" alt="left">
+        </a>
+        <h1>{{ utils.name_of_month(month) }}</h1>
+        {% set n_month, n_year = utils.next_month(month, year) %}
+        <a href="?month={{ n_month }}&year={{ n_year }}"><img src="{{ url_for('static', filename='images/arrow-right.svg') }}" alt="left"></a>
+    </div>
+    <ul class="nav nav-tabs nav-fill mb-5">
+        <li class="nav-item">
+            <a class="nav-link {% if request.path in url_for('.expense') %}active{% endif %}" aria-current="page"
+               href="{{ url_for('.expense') }}?month={{ month }}&year={{ year }}">
+                Расходы
+            </a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link {% if request.path in url_for('.income') %}active{% endif %}" aria-current="page"
+               href="{{ url_for('.income') }}?month={{ month }}&year={{ year }}">
+                Зачисления
+            </a>
+        </li>
+    </ul>
+{% endblock %}

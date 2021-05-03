@@ -1,0 +1,13 @@
+<div class="mb-5">
+    <nav aria-label="breadcrumb" style="--bs-breadcrumb-divider: '>';">
+        <ol class="breadcrumb">
+            {% for crumb in crumbs %}
+                {% if loop.index == crumbs|length %}
+                    <li class="breadcrumb-item active" aria-current="page">{{ crumb.title }}</li>
+                {% elif loop.index < crumbs|length %}
+                    <li class="breadcrumb-item"><a href="{{ crumb.url }}" class="link-secondary">{{ crumb.title }}</a></li>
+                {% endif %}
+            {% endfor %}
+        </ol>
+    </nav>
+</div>

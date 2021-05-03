@@ -1,0 +1,19 @@
+<div>
+    {% for input in form %}
+        <div class="mb-3 row">
+            <div class="col-md-2">
+                {% if input.name != 'csrf_token' %}
+                    <span>{{ input.label(class_='form-label', for=input.name) }}</span>
+                {% endif %}
+            </div>
+            <div class="col-md-10">
+                {{ input(class_='form-control') }}
+            </div>
+        </div>
+        <div>
+            {% with errors=input.errors %}
+                {% include 'components/forms/errors.html' %}
+            {% endwith %}
+        </div>
+    {% endfor %}
+</div>

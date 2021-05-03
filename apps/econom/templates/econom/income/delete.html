@@ -1,0 +1,16 @@
+{% extends 'econom/finance.html' %}
+
+{% block title %}
+    Удалить
+{% endblock %}
+
+{% block content %}
+    <form action="{{ url_for('.income_delete', income_id=income.id) }}" method="POST">
+        <h3>Удалить {{ income.title }}</h3>
+        {{ form.csrf_token }}
+        {{ form.submit(class_="btn btn-danger") }}
+        <a href="{{ url_for('.income') }}" class="btn btn-outline-primary">Отменить</a>
+        {% include 'components/forms/errors.html' %}
+    </form>
+
+{% endblock %}

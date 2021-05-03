@@ -1,0 +1,26 @@
+{% extends 'base.html' %}
+
+{% block title %}Счета{% endblock %}
+
+{% block content %}
+    {% with title='Счета' %}
+        {% include 'components/label_of_page.html' %}
+    {% endwith %}
+
+    {% with crumbs=[
+        {'url': url_for('.index'), 'title':"Главная страница"},
+        {'url': url_for('.wallets'), 'title':"Счета"},
+        {'url': url_for('.wallet_edit', wallet_id=wallet.id), 'title': wallet.title},
+        {'url': '', 'title': 'Удалить'},
+    ] %}
+        {% include 'components/breadcrumbs.html' %}
+    {% endwith %}
+    {% include 'components/flash_messages.html' %}
+    <form action="{{ url_for('.wallet_delete', wallet_id=wallet.id) }}" method="POST">
+        {{ form.csrf_token }}
+        <input type="submit" value="Удалить" class="btn btn-danger">
+        <a href="{{ url_for('.wallet_edit', wallet_id=wallet.id) }}" class="btn btn-outline-primary">Отмена</a>
+    </form>
+
+
+{% endblock %}

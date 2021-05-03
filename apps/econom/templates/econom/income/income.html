@@ -1,0 +1,33 @@
+{% extends 'econom/finance.html' %}
+
+{% block title %}Расходы{% endblock %}
+
+{% block content %}
+    {{ super() }}
+
+    <div class="mb-2">
+        <a href="{{ url_for('.income_add') }}" class="btn btn-outline-primary">Внести доходы</a>
+    </div>
+    <table class="table table-hover">
+        <thead>
+        <tr>
+            <th width="15">#</th>
+            <th width="200">Счет</th>
+            <th>Название</th>
+            <th width="100">Сумма</th>
+            <th width="50"></th>
+        </tr>
+        </thead>
+        <tbody>
+        {% for income in income_list %}
+            <tr>
+                <td>{{ loop.index }}</td>
+                <td>{{ income.wallet.title }}</td>
+                <td>{{ income.title }}</td>
+                <td>{{ income.money }}</td>
+                <td><a href="{{ url_for('.income_delete', income_id=income.id) }}" class="btn-close"></a></td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+{% endblock %}

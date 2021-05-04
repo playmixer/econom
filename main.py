@@ -1,7 +1,8 @@
 from flask import Flask, render_template
-from core.database import db
 import config
 from core.template import processor
+
+from apps.econom.models import *
 
 
 def create_app():
@@ -11,8 +12,8 @@ def create_app():
     )
     app.config.from_pyfile('config.flask.py')
 
+    from core.database import db
     db.init_app(app)
-    from apps.econom import models
 
     from apps.auth import auth_app
     from apps.econom import econom_app

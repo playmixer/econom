@@ -8,7 +8,7 @@ from calendar import monthrange
 class Wallet(db.Model):
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     title = db.Column(db.String(200), nullable=False)
-    balance = db.Column(db.Float, nullable=False, default=0)
+    balance = db.Column(db.Numeric(10, 2), nullable=False, default=0)
     user_id = db.Column(db.Integer, db.ForeignKey(User.id))
 
     @classmethod
@@ -26,7 +26,7 @@ class Wallet(db.Model):
 class Income(db.Model):
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     title = db.Column(db.String(200), nullable=False)
-    money = db.Column(db.Float, nullable=False)
+    money = db.Column(db.Numeric(10, 2), nullable=False)
     wallet_id = db.Column(db.Integer, db.ForeignKey(Wallet.id))
     wallet = db.relationship(Wallet, backref='incomes')
     time_event = db.Column(db.DATETIME, nullable=False, default=datetime.datetime.now)
@@ -64,7 +64,7 @@ class Income(db.Model):
 class Expense(db.Model):
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     title = db.Column(db.String(200), nullable=False)
-    money = db.Column(db.Float, nullable=False)
+    money = db.Column(db.Numeric(10, 2), nullable=False)
     wallet_id = db.Column(db.Integer, db.ForeignKey(Wallet.id))
     wallet = db.relationship(Wallet, backref='expenses')
     time_event = db.Column(db.DATETIME, nullable=False, default=datetime.datetime.now)

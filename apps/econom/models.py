@@ -3,6 +3,7 @@ import datetime
 from apps.auth.models import User
 from sqlalchemy import and_
 from calendar import monthrange
+import decimal
 
 
 class Wallet(db.Model):
@@ -42,7 +43,7 @@ class Income(db.Model):
             time_event=time_event
         )
 
-        wallet.balance += float(money)
+        wallet.balance += decimal.Decimal(money)
 
         db.session.add(income)
         db.session.commit()
@@ -79,8 +80,8 @@ class Expense(db.Model):
             wallet_id=wallet.id,
             time_event=time_event
         )
-
-        wallet.balance -= float(money)
+        print(wallet.balance, decimal.Decimal(money))
+        wallet.balance -= decimal.Decimal(money)
 
         db.session.add(expense)
         db.session.commit()

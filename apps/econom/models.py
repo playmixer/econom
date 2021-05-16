@@ -11,6 +11,7 @@ class Wallet(db.Model):
     title = db.Column(db.String(200), nullable=False)
     balance = db.Column(db.Numeric(10, 2), nullable=False, default=0)
     user_id = db.Column(db.Integer, db.ForeignKey(User.id))
+    user = db.relationship(User, backref='wallets')
 
     @classmethod
     def create(cls, user: User, title):
@@ -98,3 +99,11 @@ class Expense(db.Model):
         self.wallet.balance += self.money
         db.session.delete(self)
         db.session.commit()
+
+
+class WalletBar(db.Model):
+    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    wallet_id = db.Column(db.Integer, db.ForeignKey(Wallet.id))
+    wallet = db.relationship(Wallet, backref='bar')
+    user_id = db.Column(db.Integer, db.ForeignKey(User.id))
+    user = db.relationship(User, backref='wallet_bar')

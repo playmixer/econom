@@ -2,6 +2,7 @@ from flask import Blueprint, render_template, request, redirect, url_for, flash
 from .forms import *
 from .auth import Auth
 from . import decorators
+from apps.econom.models import WalletBar
 
 __all__ = ['auth_app']
 
@@ -19,13 +20,9 @@ def login():
         username = request.form.get('username')
         password = request.form.get('password')
 
-        print(username, password)
-
     if form.validate_on_submit():
-        print(username, password)
         auth = Auth()
         auth.login(username, password)
-        print(auth.is_authenticated())
         if not auth.is_authenticated():
             flash('Не верный логин или пароль', 'error')
             return render_template('auth/login.html', form=form, error='error')
@@ -44,3 +41,18 @@ def logout():
 @decorators.login_required
 def cabinet():
     return render_template('auth/cabinet.html')
+
+
+@auth_app.route('/cabinet/balance-bar', methods=['GET'])
+@decorators.login_required
+def balance_bar():
+    user = Auth.get_user()
+    wallets = user.wallets
+    wallet_bar = user.wallet_bar
+    w_choices = list((w.id, w.title) for w in wallets)
+    print(w_choices)
+    form = BalanceBar()
+    form.wallets.choices = w_choices
+    if form.validate_on_submit():
+        ...
+    return render_template('auth/balance_bar.html', form=form)

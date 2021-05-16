@@ -19,15 +19,15 @@
     <table class="table table-hover">
         <thead>
         <tr>
-            <th>#</th>
-            <th>Счет</th>
-            <th>Баланс</th>
+            <th scope="col">#</th>
+            <th scope="col">Счет</th>
+            <th scope="col">Баланс</th>
         </tr>
         </thead>
         <tbody>
         {% for wallet in wallet_list %}
             <tr onclick="window.location=`{{ url_for('.wallet_edit', wallet_id=wallet.id) }}`">
-                <td>{{ loop.index }}</td>
+                <th scope="row">{{ loop.index }}</th>
                 <td>{{ wallet.title }}</td>
                 <td>{{ wallet.balance }}</td>
             </tr>

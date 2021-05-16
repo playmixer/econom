@@ -10,21 +10,24 @@
         {'url': '', 'title': 'Личный кабинет'}
     ] %}
         {% include 'components/breadcrumbs.html' %}
-        {% set user = auth.get_user() %}
-        <h5>Персональный токен</h5>
-        <div class="d-flex flex-row ">
-            <input type="text" class="form-control" style="margin-right: 5px" id="personalToken" name="personalToken"
-                   value="{{ user.personal_token or '' }}" readonly>
-            <button class="btn btn-primary" onclick="copyToken()">Копировать</button>
-        </div>
 
     {% endwith %}
+    <div class="row">
+        <div class="col-2 border-1 border-secondary border">
+            <div><a href="{{ url_for('.balance_bar') }}" class="nav-link"><span>Баланс бар</span></a></div>
+            <div><a href="#" class="nav-link"><span>Баланс бар</span></a></div>
+        </div>
+        <div class="col-10">
+            {% block cabinet %}
+            {% endblock %}
+        </div>
+    </div>
+
     <script>
-        const copyToken = () => {
-            const inputToken = document.getElementById("personalToken");
-            inputToken.select();
-            document.execCommand("copy");
-        }
+    $(document).ready(function() {
+      console.log('load')
+    });
     </script>
+
 
 {% endblock %}

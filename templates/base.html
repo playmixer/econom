@@ -6,9 +6,11 @@
     {% block css %}
         <link rel="stylesheet" href="{{ url_for('static', filename='css/bootstrap.min.css') }}">
     {% endblock %}
+    <script src="https://code.jquery.com/jquery-3.6.0.slim.min.js"
+            integrity="sha256-u7e5khyithlIdTpu22PHhENmPcRdFiHRjhAuHcs05RI=" crossorigin="anonymous"></script>
 </head>
 <body>
-<div class="container bg-white">
+<div class="container-lg bg-white">
     {% if auth.is_authenticated() %}
         {% include 'navbar.html' %}
     {% endif %}

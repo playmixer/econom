@@ -15,6 +15,7 @@
             <th width="200">Счет</th>
             <th>Название</th>
             <th width="100">Сумма</th>
+            <th width="120">Дата</th>
             <th width="50"></th>
         </tr>
         </thead>
@@ -25,6 +26,7 @@
                 <td>{{ income.wallet.title }}</td>
                 <td>{{ income.title }}</td>
                 <td>{{ income.money }}</td>
+                <td>{{ income.time_event.strftime('%d.%m.%Y') }}</td>
                 <td><a href="{{ url_for('.income_delete', income_id=income.id) }}" class="btn-close"></a></td>
             </tr>
         {% endfor %}

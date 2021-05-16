@@ -26,7 +26,7 @@ def index():
     # return render_template('econom/econom.html')
 
 
-@econom_app.route('/wallet')
+@econom_app.route('/wallets')
 @decorators.login_required
 def wallets():
     wallet_list = Wallet.query.filter_by(user_id=Auth.get_user().id)
@@ -127,7 +127,8 @@ def expense():
     month, year = utils.selected_month()
     d1, d2 = utils.max_min_datetime_in_month(month, year)
 
-    expense_list = Expense.get_by_user(user).filter(and_(Expense.time_event >= d1, Expense.time_event <= d2))
+    expense_list = Expense.get_by_user(user).filter(and_(Expense.time_event >= d1, Expense.time_event <= d2)). \
+        order_by(Expense.time_event.desc())
 
     return render_template('econom/expense/expense.html', expense_list=expense_list, month=month, year=year)
 
@@ -180,7 +181,8 @@ def income():
     month, year = utils.selected_month()
     d1, d2 = utils.max_min_datetime_in_month(month, year)
 
-    income_list = Income.get_by_user(user).filter(and_(Expense.time_event >= d1, Expense.time_event <= d2))
+    income_list = Income.get_by_user(user).filter(and_(Expense.time_event >= d1, Expense.time_event <= d2)). \
+        order_by(Expense.time_event.desc())
 
     return render_template('econom/income/income.html', income_list=income_list, month=month, year=year)
 

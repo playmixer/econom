@@ -15,17 +15,21 @@ def create_app():
     from core.database import db
     db.init_app(app)
 
-    from apps.auth import auth_app
-    from apps.econom import econom_app
+    # from apps.auth import auth_app
+    # from apps.econom import econom_app
+    from apps.frontend.views import frontend
+    from apps.api import api
 
-    app.register_blueprint(econom_app, url_prefix=config.SUBDIRECTORY + '/')
-    app.register_blueprint(auth_app, url_prefix=config.SUBDIRECTORY + '/auth')
+    # app.register_blueprint(econom_app, url_prefix=config.SUBDIRECTORY + '/econom')
+    # app.register_blueprint(auth_app, url_prefix=config.SUBDIRECTORY + '/auth')
+    app.register_blueprint(api, url_prefix=config.SUBDIRECTORY + '/api/v0')
+    app.register_blueprint(frontend, url_prefix="/")
 
     processor.init_app(app)
 
     @app.errorhandler(404)
     def err_404(err):
-        return render_template('404.html')
+        return '404'  # render_template('404.html')
 
     return app
 

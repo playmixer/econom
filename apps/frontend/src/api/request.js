@@ -1,4 +1,6 @@
-const API = '/econom/api/v0/'
+import config from "../../../../config.json"
+
+const API = `${config.subdirectory}/api/v0/`
 
 const _response = async (method, url, data) => {
     const res = await fetch(API + url, {

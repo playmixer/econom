@@ -4,6 +4,12 @@ import {Link} from "react-router-dom"
 
 import {logout} from "../store/actions/user"
 
+import config from "../../../../config.json"
+
+const actualLink = (url) => {
+    return `${config.subdirectory}/${url}`
+}
+
 const Menu = ({user, dispatch}) => {
 
     const onLogout = () => {
@@ -12,7 +18,7 @@ const Menu = ({user, dispatch}) => {
 
     return <nav className="navbar navbar-expand-lg navbar-light bg-light mb-4">
         <div className="container-fluid">
-            <Link to="/" className="navbar-brand">Econom</Link>
+            <Link to={actualLink("")} className="navbar-brand">Econom</Link>
             <button className="navbar-toggler" type="button" data-bs-toggle="collapse"
                     data-bs-target="#navbarSupportedContent"
                     aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
@@ -21,10 +27,10 @@ const Menu = ({user, dispatch}) => {
             <div className="collapse navbar-collapse" id="navbarSupportedContent">
                 <ul className="navbar-nav me-auto mb-2 mb-lg-0">
                     <li className="nav-item">
-                        <Link to="/wallets" className="nav-link" aria-current="page">Счета</Link>
+                        <Link to={actualLink("wallets")} className="nav-link" aria-current="page">Счета</Link>
                     </li>
                     <li className="nav-item">
-                        <Link to="/expense" className="nav-link">Финансы</Link>
+                        <Link to={actualLink("expense")} className="nav-link">Финансы</Link>
                     </li>
                 </ul>
                 <span style={{marginRight: "5px"}}>

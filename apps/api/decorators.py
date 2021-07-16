@@ -1,5 +1,6 @@
 from .lib import response_json
 from functools import wraps
+from . import exceptions
 
 
 def exception(f):
@@ -8,6 +9,7 @@ def exception(f):
         try:
             return f(*args, **kwargs)
         except Exception as err:
-            return response_json(False, message=str(err))
+            print(f"error function {f.__name__}: {args}, {kwargs} \n {str(err)}")
+            return response_json(False, error=str(err))
 
     return wrapper

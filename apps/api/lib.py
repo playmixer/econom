@@ -1,7 +1,7 @@
 from flask import jsonify
 
 
-def response_json(ok=True, data=None, message=None):
+def response_json(ok=True, data=None, message=None, error=None):
     res = {
         'Ok': ok
     }
@@ -10,6 +10,9 @@ def response_json(ok=True, data=None, message=None):
 
     if message:
         res['Message'] = message
+
+    if error:
+        res['Error'] = error
 
     return jsonify(res)
 

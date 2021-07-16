@@ -24,6 +24,12 @@ class Wallet(db.Model):
         db.session.delete(self)
         db.session.commit()
 
+    def edit(self, title, balance, commit=True):
+        self.title = title
+        self.balance = decimal.Decimal(balance)
+        if commit:
+            db.session.commit()
+
 
 class Income(db.Model):
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
@@ -62,6 +68,15 @@ class Income(db.Model):
         db.session.delete(self)
         db.session.commit()
 
+    def edit(self, *, title, money, wallet, time_event, commit=True):
+        self.title = title
+        self.money = money
+        self.wallet_id = wallet.id
+        self.time_event = time_event
+        if commit:
+            db.session.commit()
+        return self
+
 
 class Expense(db.Model):
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
@@ -99,6 +114,22 @@ class Expense(db.Model):
         self.wallet.balance += self.money
         db.session.delete(self)
         db.session.commit()
+
+    def edit(self, *, title, money, wallet, time_event, commit=True):
+        self.title = title
+        self.time_event = time_event
+        if self.wallet_id == wallet.id:
+            wallet.balance += self.money - decimal.Decimal(money)
+        else:
+            wallet_prev = Wallet.query.get(self.wallet_id)
+            wallet_prev.balance += decimal.Decimal(self.money)
+            wallet.balance -= decimal.Decimal(money)
+
+        self.money = money
+        self.wallet_id = wallet.id
+        if commit:
+            db.session.commit()
+        return self
 
 
 class WalletBar(db.Model):

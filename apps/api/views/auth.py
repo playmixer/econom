@@ -1,7 +1,7 @@
 from flask import request
 from apps.auth.auth import Auth
 from ..lib import response_json
-from ..intefrace.auth import Source, User
+from ..serialization.auth import Source, User
 
 
 def init_auth(app):

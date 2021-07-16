@@ -71,7 +71,8 @@ const MonthToolbar = ({value, setValue, flow, setFlows}) => {
 
 const CashFlows = () => {
     const [bar, setBar] = useState(typeBar.EXPENSE)
-    const [period, setPeriod] = useState({year: 2021, month: 6})
+    const currentDate = new Date()
+    const [period, setPeriod] = useState({year: currentDate.getFullYear(), month: currentDate.getMonth() + 1})
 
     return (
         <div>

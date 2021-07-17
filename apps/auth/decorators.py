@@ -21,6 +21,18 @@ def role_required(role: str):
     return wrapper
 
 
+def login_required_api(f):
+    @wraps(f)
+    def wrap(*args, **kwargs):
+        auth = Auth()
+        if auth.is_authenticated():
+            return f(*args, **kwargs)
+
+        return {'Ok': False, 'Message': '401 Unauthorized'}, 401
+
+    return wrap
+
+
 def login_required(f):
     @wraps(f)
     def wrap(*args, **kwargs):

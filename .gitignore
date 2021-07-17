@@ -1,4 +1,5 @@
 config.py
+config.json
 .idea/
 env/
 **/__pycache__/**

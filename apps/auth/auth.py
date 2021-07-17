@@ -40,7 +40,7 @@ class Auth:
                 'username': user.username,
                 'user_id': user.id
             }
-            return True
+            return user
 
         cls.logout()
         return False
@@ -63,7 +63,7 @@ class Auth:
             return user.get('username')
 
     @classmethod
-    def get_user(cls):
+    def get_user(cls) -> User:
         if cls.is_authenticated():
             user = User.query.filter_by(username=cls.get_username()).first()
             return user
